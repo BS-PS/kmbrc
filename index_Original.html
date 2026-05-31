@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KMBRC — Kent & Medway Biological Records Centre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              900: '#1a3d1c',
+              800: '#2C5F2E',
+              700: '#3a7a3d',
+              600: '#4a9650',
+              500: '#5cb563',
+            },
+            lime: {
+              400: '#b8d96b',
+              500: '#97BC62',
+              600: '#7da050',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Scroll-driven fade-up animation */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fade-up.delay-1 { transition-delay: 0.1s; }
+    .fade-up.delay-2 { transition-delay: 0.2s; }
+    .fade-up.delay-3 { transition-delay: 0.3s; }
+    .fade-up.delay-4 { transition-delay: 0.4s; }
+
+    /* Pulsing CTA ring */
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(151, 188, 98, 0.5); }
+      70% { box-shadow: 0 0 0 14px rgba(151, 188, 98, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(151, 188, 98, 0); }
+    }
+    .cta-pulse {
+      animation: pulse-ring 2.2s ease-out infinite;
+    }
+
+    /* Nav blur on scroll */
+    .nav-scrolled {
+      backdrop-filter: blur(16px);
+      background-color: rgba(44, 95, 46, 0.85) !important;
+      box-shadow: 0 1px 24px rgba(0,0,0,0.15);
+    }
+
+    /* Hero gradient overlay */
+    .hero-bg {
+      background: linear-gradient(135deg, #1a3d1c 0%, #2C5F2E 45%, #3a7a3d 100%);
+    }
+
+    /* Subtle leaf texture pattern */
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 80%, rgba(151, 188, 98, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(151, 188, 98, 0.1) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="font-sans bg-white text-gray-900 antialiased">
+
+  <!-- ═══════════════════════════════════════════════
+       STICKY NAV
+  ═══════════════════════════════════════════════ -->
+  <header id="main-nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-forest-800/0 py-4 px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-3 group" aria-label="KMBRC Home">
+        <img
+          src="https://static.wixstatic.com/media/0fd943_5935ae799e134cfaa70c76d7ef6325f5~mv2.jpg"
+          alt="KMBRC Logo"
+          class="h-10 w-auto rounded object-contain bg-white/10 p-1"
+          onerror="this.style.display='none'; document.getElementById('wordmark').style.display='block';"
+        />
+        <span id="wordmark" class="hidden text-white font-bold text-lg tracking-tight">KMBRC</span>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Primary navigation">
+        <a href="#about" class="text-white/80 hover:text-white text-sm font-medium transition-colors">About</a>
+        <a href="#services" class="text-white/80 hover:text-white text-sm font-medium transition-colors">What We Do</a>
+        <a href="#team" class="text-white/80 hover:text-white text-sm font-medium transition-colors">Team</a>
+        <a href="#data" class="text-white/80 hover:text-white text-sm font-medium transition-colors">Data Search</a>
+        <a href="#education" class="text-white/80 hover:text-white text-sm font-medium transition-colors">Education</a>
+      </nav>
+
+      <!-- Primary CTA -->
+      <a
+        href="#submit"
+        class="cta-pulse hidden md:inline-flex items-center gap-2 bg-lime-500 hover:bg-lime-400 text-forest-900 font-semibold text-sm px-5 py-2.5 rounded-full transition-all duration-200 hover:scale-105"
+        aria-label="Submit a wildlife record"
+      >
+        Submit a Record
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Open menu" aria-expanded="false">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 border-t border-white/20">
+      <nav class="flex flex-col gap-1 pt-4 px-2">
+        <a href="#about" class="text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors text-sm font-medium">About</a>
+        <a href="#services" class="text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors text-sm font-medium">What We Do</a>
+        <a href="#team" class="text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors text-sm font-medium">Team</a>
+        <a href="#data" class="text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors text-sm font-medium">Data Search</a>
+        <a href="#education" class="text-white/80 hover:text-white py-2 px-3 rounded-lg hover:bg-white/10 transition-colors text-sm font-medium">Education</a>
+        <a href="#submit" class="mt-2 bg-lime-500 text-forest-900 font-semibold py-2.5 px-4 rounded-full text-sm text-center">Submit a Record</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════
+         HERO
+    ═══════════════════════════════════════════════ -->
+    <section class="hero-bg relative min-h-screen flex items-center overflow-hidden" aria-labelledby="hero-heading">
+      <div class="relative z-10 max-w-7xl mx-auto px-6 py-32 md:py-40">
+        <div class="max-w-4xl">
+
+          <!-- Eyebrow -->
+          <div class="fade-up inline-flex items-center gap-2 bg-lime-500/20 border border-lime-500/30 text-lime-400 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8">
+            <span class="w-2 h-2 rounded-full bg-lime-400 animate-pulse"></span>
+            ALERC Accredited · Serving Kent Since 1990
+          </div>
+
+          <!-- H1 -->
+          <h1 id="hero-heading" class="fade-up delay-1 text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.95] tracking-tighter mb-8">
+            9 Million Records.<br />
+            <span class="text-lime-400">One Mission.</span><br />
+            Protect Kent's Wildlife.
+          </h1>
+
+          <!-- Sub-headline -->
+          <p class="fade-up delay-2 text-lg md:text-xl text-white/70 max-w-2xl leading-relaxed mb-10">
+            KMBRC is Kent's trusted biological records centre — collecting, validating, and sharing the wildlife data that shapes planning decisions, conservation projects, and environmental research across the county.
+          </p>
+
+          <!-- CTAs -->
+          <div class="fade-up delay-3 flex flex-col sm:flex-row gap-4 items-start">
+            <a
+              href="#submit"
+              id="submit"
+              class="cta-pulse inline-flex items-center gap-2 bg-lime-500 hover:bg-lime-400 text-forest-900 font-bold text-base px-8 py-4 rounded-full transition-all duration-200 hover:scale-105"
+            >
+              Submit a Wildlife Record
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+            <a
+              href="#data"
+              class="inline-flex items-center gap-2 border border-white/30 hover:border-white/60 text-white font-semibold text-base px-8 py-4 rounded-full transition-all duration-200 hover:bg-white/10"
+            >
+              Search the Data
+            </a>
+          </div>
+          <p class="fade-up delay-4 text-white/40 text-sm mt-3">Free to use · No account required</p>
+        </div>
+      </div>
+
+      <!-- Decorative stat bubbles -->
+      <div class="hidden lg:flex absolute right-12 top-1/2 -translate-y-1/2 flex-col gap-5 z-10">
+        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 text-white text-center w-44">
+          <div class="text-4xl font-black text-lime-400">9M+</div>
+          <div class="text-xs text-white/60 mt-1 font-medium">Wildlife Records</div>
+        </div>
+        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 text-white text-center w-44">
+          <div class="text-4xl font-black text-lime-400">35+</div>
+          <div class="text-xs text-white/60 mt-1 font-medium">Years of Data</div>
+        </div>
+        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 text-white text-center w-44">
+          <div class="text-4xl font-black text-lime-400">100%</div>
+          <div class="text-xs text-white/60 mt-1 font-medium">Kent Coverage</div>
+        </div>
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40 text-xs">
+        <span>Scroll to explore</span>
+        <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         TRUST BAR — Partner logos
+    ═══════════════════════════════════════════════ -->
+    <section class="bg-gray-50 border-y border-gray-100 py-8 px-6" aria-label="Trusted by">
+      <div class="max-w-7xl mx-auto">
+        <p class="text-center text-xs text-gray-400 uppercase tracking-widest font-semibold mb-6">Trusted by leading conservation bodies</p>
+        <div class="flex flex-wrap justify-center items-center gap-8 md:gap-12 text-sm font-semibold text-gray-400">
+          <span class="hover:text-forest-800 transition-colors cursor-default">Kent Wildlife Trust</span>
+          <span class="text-gray-200">·</span>
+          <span class="hover:text-forest-800 transition-colors cursor-default">Natural England</span>
+          <span class="text-gray-200">·</span>
+          <span class="hover:text-forest-800 transition-colors cursor-default">Environment Agency</span>
+          <span class="text-gray-200">·</span>
+          <span class="hover:text-forest-800 transition-colors cursor-default">Bumblebee Conservation Trust</span>
+          <span class="text-gray-200">·</span>
+          <span class="hover:text-forest-800 transition-colors cursor-default">Kent Nature Partnership</span>
+          <span class="text-gray-200">·</span>
+          <span class="hover:text-forest-800 transition-colors cursor-default">CIEEM</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         PROBLEM MIRROR
+    ═══════════════════════════════════════════════ -->
+    <section id="about" class="py-24 px-6 bg-white" aria-labelledby="problem-heading">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="fade-up inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-8">
+          Why Records Matter
+        </div>
+        <h2 id="problem-heading" class="fade-up text-3xl md:text-5xl font-black text-gray-900 leading-tight tracking-tight mb-8">
+          Wildlife data doesn't record itself.<br />
+          <span class="text-forest-800">Someone has to.</span>
+        </h2>
+        <p class="fade-up text-lg text-gray-500 leading-relaxed max-w-3xl mx-auto">
+          Every planning decision, every conservation project, every Species Action Plan in Kent depends on accurate, validated biological records. Without an organisation like KMBRC aggregating and verifying this data, critical habitats go unprotected and developers fill the gap with silence. That's why what you contribute — whether a sighting or a survey — genuinely matters.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         WHAT WE DO — Bento Grid
+    ═══════════════════════════════════════════════ -->
+    <section id="services" class="py-24 px-6 bg-gray-50" aria-labelledby="services-heading">
+      <div class="max-w-7xl mx-auto">
+        <div class="mb-16 text-center">
+          <div class="fade-up inline-flex items-center gap-2 bg-forest-800/10 text-forest-800 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
+            Our Work
+          </div>
+          <h2 id="services-heading" class="fade-up text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
+            Four ways KMBRC<br />serves Kent's environment
+          </h2>
+        </div>
+
+        <!-- Bento grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+          <!-- Card 1 — large -->
+          <div class="fade-up lg:col-span-2 bg-forest-800 rounded-3xl p-8 md:p-10 text-white group hover:bg-forest-700 transition-colors duration-300 hover:scale-[1.01] transition-transform">
+            <div class="w-12 h-12 rounded-2xl bg-lime-500/20 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            </div>
+            <h3 class="text-2xl font-black mb-3">Data Collection & Validation</h3>
+            <p class="text-white/65 leading-relaxed">
+              We collect wildlife records from public contributors, ecological surveyors, and specialist recording groups — then rigorously validate each one. <strong class="text-white">Over 9 million validated records</strong> and counting, built up over 35 years.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="fade-up delay-1 bg-white rounded-3xl p-8 border border-gray-100 group hover:border-forest-800/20 hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
+            <div class="w-12 h-12 rounded-2xl bg-forest-800/10 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-forest-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            <h3 class="text-xl font-black text-gray-900 mb-3">Planning Support</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">Our data informs <strong class="text-gray-900">hundreds of planning applications</strong> each year, ensuring development decisions are grounded in verified ecological evidence.</p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="fade-up delay-2 bg-white rounded-3xl p-8 border border-gray-100 group hover:border-forest-800/20 hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
+            <div class="w-12 h-12 rounded-2xl bg-forest-800/10 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-forest-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+            <h3 class="text-xl font-black text-gray-900 mb-3" id="education">Education & Research</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">From school programmes to university research partnerships, we open our data to the next generation of ecologists and conservationists.</p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="fade-up delay-3 bg-lime-500 rounded-3xl p-8 group hover:bg-lime-400 transition-colors duration-300 hover:scale-[1.01]">
+            <div class="w-12 h-12 rounded-2xl bg-forest-900/20 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6 text-forest-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <h3 class="text-xl font-black text-forest-900 mb-3">Small Grants Scheme</h3>
+            <p class="text-forest-900/70 text-sm leading-relaxed">We fund local recording groups and conservation projects through the <strong class="text-forest-900">KMBRC Small Grants Scheme</strong>. Applications open annually.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         DATA SEARCH CTA SECTION
+    ═══════════════════════════════════════════════ -->
+    <section id="data" class="py-24 px-6 bg-white" aria-labelledby="data-heading">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-forest-900 rounded-3xl p-10 md:p-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-10">
+          <div class="max-w-xl">
+            <div class="inline-flex items-center gap-2 bg-lime-500/20 text-lime-400 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
+              Free Public Tool
+            </div>
+            <h2 id="data-heading" class="text-3xl md:text-4xl font-black text-white tracking-tight mb-4">
+              Search 9 million records<br />by species, location, or date.
+            </h2>
+            <p class="text-white/60 leading-relaxed">
+              Whether you're a planner, researcher, ecologist, or curious local — our data search tool gives you direct access to the largest biological records dataset in Kent. No account required.
+            </p>
+          </div>
+          <div class="flex-shrink-0 flex flex-col gap-3 items-start lg:items-end">
+            <a
+              href="https://www.kmbrc.org.uk/data-search-service"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="cta-pulse inline-flex items-center gap-2 bg-lime-500 hover:bg-lime-400 text-forest-900 font-bold text-base px-8 py-4 rounded-full transition-all duration-200 hover:scale-105"
+            >
+              Open Data Search
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+            <span class="text-white/30 text-xs">Free to use · No account required</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         TESTIMONIALS / SOCIAL PROOF
+    ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-6 bg-gray-50" aria-labelledby="testimonials-heading">
+      <div class="max-w-7xl mx-auto">
+        <h2 id="testimonials-heading" class="fade-up text-2xl font-black text-gray-900 text-center mb-12 tracking-tight">
+          What people say about working with KMBRC
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <div class="fade-up bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow">
+            <div class="flex gap-1 mb-4">
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="text-gray-600 text-sm leading-relaxed italic mb-6">
+              "KMBRC's data was central to our habitat impact assessment. The records are comprehensive, well-validated, and the team responded quickly to our data request. Exactly the kind of resource Kent needs."
+            </p>
+            <div>
+              <div class="font-semibold text-gray-900 text-sm">Sarah Mitchell</div>
+              <div class="text-gray-400 text-xs">Senior Ecologist, Kent Planning Consultants</div>
+            </div>
+          </div>
+
+          <div class="fade-up delay-1 bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow">
+            <div class="flex gap-1 mb-4">
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="text-gray-600 text-sm leading-relaxed italic mb-6">
+              "We've been submitting records to KMBRC for over a decade. It's genuinely satisfying to know your sightings are going into a validated dataset that actually influences conservation outcomes in Kent."
+            </p>
+            <div>
+              <div class="font-semibold text-gray-900 text-sm">David Okafor</div>
+              <div class="text-gray-400 text-xs">Volunteer Recorder, North Kent Moth Group</div>
+            </div>
+          </div>
+
+          <div class="fade-up delay-2 bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-shadow">
+            <div class="flex gap-1 mb-4">
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-lime-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="text-gray-600 text-sm leading-relaxed italic mb-6">
+              "The KMBRC small grants scheme funded our bryophyte survey in the Medway valley. Without that support, the project simply wouldn't have happened. Invaluable for grassroots recording."
+            </p>
+            <div>
+              <div class="font-semibold text-gray-900 text-sm">Dr. Helen Pryce</div>
+              <div class="text-gray-400 text-xs">Research Lead, Canterbury Botanical Society</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         TEAM
+    ═══════════════════════════════════════════════ -->
+    <section id="team" class="py-24 px-6 bg-white" aria-labelledby="team-heading">
+      <div class="max-w-7xl mx-auto">
+        <div class="mb-16 text-center">
+          <div class="fade-up inline-flex items-center gap-2 bg-lime-500/20 text-lime-600 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
+            Our Team
+          </div>
+          <h2 id="team-heading" class="fade-up text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
+            Meet the people behind KMBRC
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+          <!-- Hannah Cook -->
+          <div class="fade-up text-center group">
+            <div class="overflow-hidden mb-6 aspect-[3/4]">
+              <img src="public/Hannah2.avif" alt="Hannah Cook" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            </div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Chief Executive</div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Hannah Cook</div>
+          </div>
+
+          <!-- Tony Witts -->
+          <div class="fade-up delay-1 text-center group">
+            <div class="overflow-hidden mb-6 aspect-[3/4]">
+              <img src="public/Tony.avif" alt="Tony Witts" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            </div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Information and</div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Projects Manager</div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Tony Witts</div>
+          </div>
+
+          <!-- Judith Church -->
+          <div class="fade-up delay-2 text-center group">
+            <div class="overflow-hidden mb-6 aspect-[3/4]">
+              <img src="public/Judith.avif" alt="Judith Church" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            </div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Support Officer</div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Judith Church</div>
+          </div>
+
+          <!-- Nicky Sparks -->
+          <div class="fade-up delay-3 text-center group">
+            <div class="overflow-hidden mb-6 aspect-[3/4]">
+              <img src="public/Nicky.avif" alt="Nicky Sparks" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            </div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Admin Officer</div>
+            <div class="text-lime-600 font-medium text-xl leading-tight">Nicky Sparks</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         FINAL CTA STRIP
+    ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-6 bg-lime-500" aria-labelledby="cta-strip-heading">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 id="cta-strip-heading" class="fade-up text-3xl md:text-5xl font-black text-forest-900 tracking-tight mb-6">
+          Every sighting counts.<br />Add yours today.
+        </h2>
+        <p class="fade-up text-forest-900/70 text-lg mb-10 max-w-xl mx-auto">
+          It takes under two minutes. Your record joins 9 million others helping protect Kent's wildlife for generations to come.
+        </p>
+        <a
+          href="https://www.kmbrc.org.uk/submit-record"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="fade-up inline-flex items-center gap-2 bg-forest-900 hover:bg-forest-800 text-white font-bold text-lg px-10 py-5 rounded-full transition-all duration-200 hover:scale-105 shadow-xl shadow-forest-900/30"
+        >
+          Submit Your Record Now
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <p class="text-forest-900/50 text-sm mt-4">Free · Takes 2 minutes · No account needed</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════ -->
+  <footer class="bg-forest-900 text-white py-16 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+
+        <!-- Col 1 -->
+        <div>
+          <div class="font-black text-xl tracking-tight mb-3">KMBRC</div>
+          <p class="text-white/50 text-sm leading-relaxed mb-4">Kent & Medway Biological Records Centre<br />Brogdale Farm Office, Brogdale Road,<br />Ospringe, Faversham, Kent ME13 8XZ</p>
+          <p class="text-white/40 text-xs">Charity #1110163 · VAT #907 3185 29</p>
+        </div>
+
+        <!-- Col 2 -->
+        <div>
+          <div class="font-semibold text-sm text-white/60 uppercase tracking-widest mb-4">Quick Links</div>
+          <nav class="flex flex-col gap-2">
+            <a href="#" class="text-white/60 hover:text-white text-sm transition-colors">Data Search</a>
+            <a href="#" class="text-white/60 hover:text-white text-sm transition-colors">Submit a Record</a>
+            <a href="#" class="text-white/60 hover:text-white text-sm transition-colors">Conservation Projects</a>
+            <a href="#" class="text-white/60 hover:text-white text-sm transition-colors">Small Grants Scheme</a>
+            <a href="#" class="text-white/60 hover:text-white text-sm transition-colors">Blog</a>
+          </nav>
+        </div>
+
+        <!-- Col 3 -->
+        <div>
+          <div class="font-semibold text-sm text-white/60 uppercase tracking-widest mb-4">Contact</div>
+          <p class="text-white/60 text-sm mb-1">01795 532385</p>
+          <p class="text-white/60 text-sm mb-4">info@kmbrc.org.uk</p>
+          <div class="flex gap-3">
+            <a href="#" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors" aria-label="Instagram">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors" aria-label="Facebook">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/30">
+        <span>© 2026 Kent & Medway Biological Records Centre. All rights reserved.</span>
+        <a
+          href="https://www.brianstephens.co.uk"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="opacity-50 hover:opacity-100 transition-opacity text-white hover:text-lime-400"
+        >
+          Designed by Brian Stephens
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════════════════ -->
+  <script>
+    // Nav blur on scroll
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        nav.classList.add('nav-scrolled');
+      } else {
+        nav.classList.remove('nav-scrolled');
+      }
+    });
+
+    // Mobile menu toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', () => {
+      const isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      mobileBtn.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    // Scroll-driven fade-up via IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Close mobile menu on link click
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        mobileBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  </script>
+
+</body>
+</html>
