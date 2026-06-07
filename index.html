@@ -89,6 +89,77 @@
       background: linear-gradient(135deg, #0f2410 0%, #1a3d1c 30%, #2C5F2E 65%, #3a7a3d 100%);
     }
 
+    /* Two-image parallax + Ken Burns hero background */
+    .hero-photo-bg {
+      position: absolute;
+      inset: -30% 0;  /* extra height prevents parallax edge bleed */
+      z-index: 0;
+      will-change: transform;
+    }
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 40%;
+      display: block;
+      will-change: transform, opacity;
+    }
+
+    /* Ken Burns: slow left-to-right pan + subtle scale */
+    @keyframes hero-pan {
+      0%   { transform: scale(1.08) translateX(-4%); }
+      100% { transform: scale(1.14) translateX(4%);  }
+    }
+    /* Crossfade: each image fades in, holds, fades out over a 14s cycle */
+    @keyframes hero-fade-a {
+      0%   { opacity: 1; }
+      40%  { opacity: 1; }
+      50%  { opacity: 0; }
+      90%  { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes hero-fade-b {
+      0%   { opacity: 0; }
+      40%  { opacity: 0; }
+      50%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    /* Slide A — flowers */
+    .hero-slide-a {
+      animation:
+        hero-pan    14s ease-in-out infinite,
+        hero-fade-a 14s ease-in-out infinite;
+    }
+    /* Slide B — pond dipping — pan starts offset so it doesn't mirror slide A */
+    .hero-slide-b {
+      animation:
+        hero-pan    14s ease-in-out infinite reverse,
+        hero-fade-b 14s ease-in-out infinite;
+    }
+
+    /* Gradient mask blends photos into the dark green brand */
+    .hero-photo-mask {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(135deg,
+          rgba(15, 36, 16, 0.96)  0%,
+          rgba(26, 61, 28, 0.85) 40%,
+          rgba(44, 95, 46, 0.75) 65%,
+          rgba(58, 122, 61, 0.82) 100%
+        ),
+        linear-gradient(to bottom,
+          rgba(10, 28, 11, 0.55) 0%,
+          transparent 35%,
+          transparent 65%,
+          rgba(10, 28, 11, 0.65) 100%
+        );
+    }
+
     /* Subtle ambient glow layer */
     .hero-bg::before {
       content: '';
@@ -252,6 +323,15 @@
          HERO
     ═══════════════════════════════════════════════ -->
     <section class="hero-bg relative min-h-screen flex items-center overflow-hidden" aria-labelledby="hero-heading">
+
+      <!-- Two-image Ken Burns + crossfade background -->
+      <div class="hero-photo-bg" id="hero-parallax-container" aria-hidden="true">
+        <img class="hero-slide hero-slide-a" src="public/flowers.avif" alt="" />
+        <img class="hero-slide hero-slide-b" src="public/pond_dipping.avif" alt="" />
+      </div>
+      <!-- Gradient mask over photos -->
+      <div class="hero-photo-mask" aria-hidden="true"></div>
+
       <div class="relative z-10 max-w-7xl mx-auto px-6 py-32 md:py-40">
         <div class="max-w-4xl">
 
@@ -714,6 +794,22 @@
         nav.classList.remove('nav-scrolled');
       }
     });
+
+    // Hero parallax scroll — moves the whole photo container
+    const parallaxContainer = document.getElementById('hero-parallax-container');
+    let ticking = false;
+    function updateParallax() {
+      // Translate the container at 40% scroll speed for depth
+      const offset = window.scrollY * 0.4;
+      parallaxContainer.style.transform = 'translateY(' + offset + 'px)';
+      ticking = false;
+    }
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    }, { passive: true });
 
     // Mobile menu toggle
     const mobileBtn = document.getElementById('mobile-menu-btn');
